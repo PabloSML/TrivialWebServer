@@ -6,13 +6,14 @@
 #include <boost/function.hpp>
 #include <boost/bind.hpp>
 
-#define HELLO_PORT 50013
+#define HELLO_PORT 80
 
 class server {
 public:
 	server();
 	void startConnection();
 	void sendMessage();
+	void receiveMessage();
 	void writeCompletitionCallback(const boost::system::error_code& error, std::size_t transfered_bytes);
 	~server();
 
@@ -32,7 +33,7 @@ void server::startConnection() {
 }
 
 void server::sendMessage() {
-	char buf[512] = "Hello from server.";
+	char buf[512] = "*Clint Eastwood face* Get off my port";
 
 	size_t len;
 	boost::system::error_code error;
@@ -42,6 +43,26 @@ void server::sendMessage() {
 		len = socket_forServer->write_some(boost::asio::buffer(buf, strlen(buf)), error);
 	} while ((error.value() == WSAEWOULDBLOCK));
 	if (error)
+		std::cout << "Error while trying to connect to server " << error.message() << std::endl;
+}
+
+void server::receiveMessage() {
+	boost::system::error_code error;
+	char buf[512];
+	size_t len = 0;
+	std::cout << "Receiving Message" << std::endl;
+	do
+	{
+		len = socket_forServer->read_some(boost::asio::buffer(buf), error);
+
+		if (!error)
+			buf[len] = '\0';
+
+	} while (error.value() == WSAEWOULDBLOCK);
+
+	if (!error)
+		std::cout << std::endl << "Client says: " << buf << std::endl;
+	else
 		std::cout << "Error while trying to connect to server " << error.message() << std::endl;
 }
 
@@ -66,7 +87,9 @@ void TCPserver()
 	std::cout << std::endl << "Start Listening on port " << HELLO_PORT << std::endl;
 	conquering.startConnection();
 	std::cout << "Somebody connected to port " << HELLO_PORT << std::endl;
-	std::cout << "Press Enter to Send Message  " << std::endl;
+	std::cout << "Waiting to hear from client" << std::endl;
+	conquering.receiveMessage();
+	std::cout << "Press Enter to Reply  " << std::endl;
 	getchar();
 	conquering.sendMessage();
 	Sleep(50); // Le damos 50ms para que llegue el mensaje antes de cerrar el socket.
@@ -74,4 +97,6 @@ void TCPserver()
 int main(int argc, char* argv[])
 {
 	TCPserver();
+	std::cout << "Press Enter to exit..." << std::endl;
+	getchar();
 }

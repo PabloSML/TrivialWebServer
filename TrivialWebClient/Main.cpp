@@ -4,7 +4,8 @@
 #include <boost/chrono.hpp>
 #include <boost/timer/timer.hpp>
 
-#define HELLO_PORT_STR "50013"
+#define CRLF "\r\n"
+#define HELLO_PORT_STR "80"
 #define SERVER_IP "localhost"
 
 using namespace std;
@@ -12,7 +13,8 @@ using namespace std;
 class client {
 public:
 	client();
-	void startConnection(const char* host);
+	void startConnection(string host);
+	void sendMessage(string message);
 	void receiveMessage();
 	~client();
 
@@ -36,7 +38,7 @@ client::~client() {
 	delete IO_handler;
 }
 
-void client::startConnection(const char* host) {
+void client::startConnection(string host) {
 	endpoint = client_resolver->resolve(
 		boost::asio::ip::tcp::resolver::query(host, HELLO_PORT_STR));
 	cout << "Trying to connect to " << host << " on port " << HELLO_PORT_STR << std::endl;
@@ -44,27 +46,27 @@ void client::startConnection(const char* host) {
 	socket_forClient->non_blocking(true);
 }
 
+void client::sendMessage(string message) {
+
+	size_t len;
+	boost::system::error_code error;
+
+	do
+	{
+		len = socket_forClient->write_some(boost::asio::buffer(message, message.size()), error);
+	} while ((error.value() == WSAEWOULDBLOCK));
+	if (error)
+		std::cout << "Error while trying to connect to server " << error.message() << std::endl;
+}
+
 void client::receiveMessage() {
 	boost::system::error_code error;
 	char buf[512];
 	size_t len = 0;
 	cout << "Receiving Message" << std::endl;
-	boost::timer::cpu_timer t;
-	t.start();
-	boost::timer::cpu_times pastTime = t.elapsed();
-	double elapsedSeconds = 0.0;
 	do
 	{
 		len = socket_forClient->read_some(boost::asio::buffer(buf), error);
-
-		boost::timer::cpu_times currentTime = t.elapsed();
-
-		if ((currentTime.wall - pastTime.wall) > 1e9)
-		{
-			elapsedSeconds += (currentTime.wall - pastTime.wall) / 1e9;
-			pastTime = currentTime;
-			cout << "Pasaron " << elapsedSeconds << " segundos." << endl;
-		}
 
 		if (!error)
 			buf[len] = '\0';
@@ -72,22 +74,46 @@ void client::receiveMessage() {
 	} while (error.value() == WSAEWOULDBLOCK);
 
 	if (!error)
-		std::cout << std::endl << "Server sais: " << buf << std::endl;
+		std::cout << std::endl << "Server says: " << buf << std::endl;
 	else
 		std::cout << "Error while trying to connect to server " << error.message() << std::endl;
 }
 
-void asioTcpClient(const char* host)
+string buildRequest(string host, string pathFile)
+{
+	string message = "GET " + pathFile + " HTTP/1.1" + CRLF + "Host:" + host + CRLF + CRLF;
+
+	return message;
+}
+
+void asioTcpClient(string host, string pathFile)
 {
 	client conquering;
 	conquering.startConnection(host);
+	string message = buildRequest(host, pathFile);
+	std::cout << "Press Enter to Send Request " << std::endl;
+	getchar();
+	conquering.sendMessage(message);
+	Sleep(50);
 	conquering.receiveMessage();
 
 }
+
+
 #include <Windows.h>
 int main(int argc, char* argv[])
 {
-	asioTcpClient(SERVER_IP);
+	std::string host;
+	std::string pathFile;
+	std::string input = argv[1];
+	std::streampos beg = 0;
+	std::streampos end = input.find_first_of('/');
+	host = input.substr(beg, end - beg);
+	beg = end;
+	beg += 1;
+	pathFile = input.substr(beg, std::string::npos);
+
+	asioTcpClient(host, pathFile);
 	std::cout << "Press Enter to exit..." << std::endl;
 	getchar();
 }
