@@ -6,9 +6,13 @@
 #include <boost/asio.hpp>
 #include <boost/function.hpp>
 #include <boost/bind.hpp>
-using namespace std;
+#include <boost/date_time/local_time/local_time.hpp>
 
+#define CRLF "\r\n"
 #define HELLO_PORT 80
+#define SERVER_IP "127.0.0.1"
+
+using namespace std;
 
 class server {
 public:
@@ -94,6 +98,37 @@ bool validateMessage(string& message)
 	return true;
 }
 
+string buildResponse(const string& pathFile, const streampos& size, const string& content)
+{
+	boost::posix_time::ptime timeRn = boost::posix_time::second_clock::local_time();
+	stringstream ss;
+	ss << timeRn;
+	boost::local_time::local_date_time ldt(boost::local_time::not_a_date_time);
+	ss >> ldt;
+	boost::local_time::local_time_facet* output_facet = new boost::local_time::local_time_facet();
+	ss.imbue(locale(locale::classic(), output_facet));
+	output_facet->format("%a, %d %b %Y %H:%M:%S GMT");
+	ss.str("");
+	ss << ldt;
+	string actualTime = ss.str();
+
+	timeRn += boost::posix_time::seconds(30);
+	ss.str("");
+	ss << timeRn;
+	ss >> ldt;
+	ss.imbue(locale(locale::classic(), output_facet));
+	output_facet->format("%a, %d %b %Y %H:%M:%S GMT");
+	ss.str("");
+	ss << ldt;
+	string timePlus30 = ss.str();
+
+	string response = string("HTTP/1.1 200 OK") + CRLF + "Date: " + actualTime + CRLF + "Location: " +
+		SERVER_IP + "/" + pathFile + CRLF + "Cache-Control: max-age=30" + CRLF + "Expires: " + timePlus30 +
+		CRLF + "Content-Lenght: " + to_string(size) + CRLF + "Content-Type: text/html; charset=iso-8859-1" + CRLF + content + CRLF;
+
+	return response;
+}
+
 void TCPserver()
 {
 	server conquering;
@@ -128,15 +163,14 @@ void TCPserver()
 			file.close();
 
 			for (int i = 0; i < size; i++)
-			{
 				content.push_back(buffer[i]);
-			}
 
 			delete[] buffer;
 
+			string response = buildResponse(pathFile, size, content);
 			cout << "Press Enter to Reply  " << endl;
 			getchar();
-			conquering.sendMessage(content);
+			conquering.sendMessage(response);
 			Sleep(50); // Le damos 50ms para que llegue el mensaje antes de cerrar el socket.
 		}
 

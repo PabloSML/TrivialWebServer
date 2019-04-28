@@ -79,7 +79,7 @@ void client::receiveMessage() {
 		std::cout << "Error while trying to connect to server " << error.message() << std::endl;
 }
 
-string buildRequest(string host, string pathFile)
+string buildRequest(const string& host, const string& pathFile)
 {
 	string message = "GET " + pathFile + " HTTP/1.1" + CRLF + "Host:" + host + CRLF + CRLF;
 
