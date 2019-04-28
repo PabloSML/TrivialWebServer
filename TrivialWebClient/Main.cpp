@@ -110,7 +110,6 @@ int main(int argc, char* argv[])
 	std::streampos end = input.find_first_of('/');
 	host = input.substr(beg, end - beg);
 	beg = end;
-	beg += 1;
 	pathFile = input.substr(beg, std::string::npos);
 
 	asioTcpClient(host, pathFile);

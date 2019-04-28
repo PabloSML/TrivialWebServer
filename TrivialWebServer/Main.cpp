@@ -14,7 +14,7 @@ class server {
 public:
 	server();
 	void startConnection();
-	void sendMessage();
+	void sendMessage(const string& message);
 	string receiveMessage();
 	void writeCompletitionCallback(const boost::system::error_code& error, size_t transfered_bytes);
 	~server();
@@ -34,18 +34,17 @@ void server::startConnection() {
 	socket_forServer->non_blocking(true);
 }
 
-void server::sendMessage() {
-	char buf[512] = "*Clint Eastwood face* Get off my port";
+void server::sendMessage(const string& message) {
 
 	size_t len;
 	boost::system::error_code error;
 
 	do
 	{
-		len = socket_forServer->write_some(boost::asio::buffer(buf, strlen(buf)), error);
+		len = socket_forServer->write_some(boost::asio::buffer(message, message.size()), error);
 	} while ((error.value() == WSAEWOULDBLOCK));
 	if (error)
-		cout << "Error while trying to connect to server " << error.message() << endl;
+		std::cout << "Error while trying to connect to server " << error.message() << std::endl;
 }
 
 string server::receiveMessage() {
@@ -99,6 +98,7 @@ void TCPserver()
 {
 	server conquering;
 	string request;
+	string pathFile;
 
 	cout << endl << "Start Listening on port " << HELLO_PORT << endl;
 	conquering.startConnection();
@@ -107,12 +107,40 @@ void TCPserver()
 	request = conquering.receiveMessage();
 	if (validateMessage(request))
 	{
+		string content;
+		streampos size;
+		char* buffer;
+		streampos beg = request.find_first_of('/');
+		beg += 1;
+		streampos end = request.find(" HTTP/1.1");
+		pathFile = request.substr(beg, end - beg);
+		const char* filename = pathFile.c_str();
+
+		ifstream file(filename, ios::in | ios::binary);
+		if (file.is_open())
+		{
+			file.seekg(0, file.end);
+			size = file.tellg();
+
+			buffer = new char[size];
+			file.seekg(0, ios::beg);
+			file.read(buffer, size);
+			file.close();
+
+			for (int i = 0; i < size; i++)
+			{
+				content.push_back(buffer[i]);
+			}
+
+			delete[] buffer;
+
+			cout << "Press Enter to Reply  " << endl;
+			getchar();
+			conquering.sendMessage(content);
+			Sleep(50); // Le damos 50ms para que llegue el mensaje antes de cerrar el socket.
+		}
 
 	}
-	cout << "Press Enter to Reply  " << endl;
-	getchar();
-	conquering.sendMessage();
-	Sleep(50); // Le damos 50ms para que llegue el mensaje antes de cerrar el socket.
 }
 int main(int argc, char* argv[])
 {
