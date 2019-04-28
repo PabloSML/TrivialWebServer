@@ -129,6 +129,37 @@ string buildResponse(const string& pathFile, const streampos& size, const string
 	return response;
 }
 
+string buildResponse()
+{
+	boost::posix_time::ptime timeRn = boost::posix_time::second_clock::local_time();
+	stringstream ss;
+	ss << timeRn;
+	boost::local_time::local_date_time ldt(boost::local_time::not_a_date_time);
+	ss >> ldt;
+	boost::local_time::local_time_facet* output_facet = new boost::local_time::local_time_facet();
+	ss.imbue(locale(locale::classic(), output_facet));
+	output_facet->format("%a, %d %b %Y %H:%M:%S GMT");
+	ss.str("");
+	ss << ldt;
+	string actualTime = ss.str();
+
+	timeRn += boost::posix_time::seconds(30);
+	ss.str("");
+	ss << timeRn;
+	ss >> ldt;
+	ss.imbue(locale(locale::classic(), output_facet));
+	output_facet->format("%a, %d %b %Y %H:%M:%S GMT");
+	ss.str("");
+	ss << ldt;
+	string timePlus30 = ss.str();
+
+	string response = string("HTTP/1.1 404 Not Found") + CRLF + "Date: " + actualTime + CRLF +
+		"Cache-Control: public, max-age=30" + CRLF + "Expires: " + timePlus30 + CRLF + "Content-Lenght: 0" +
+		"Content-Type: text/html; charset=iso-8859-1" + CRLF;
+
+	return response;
+}
+
 void TCPserver()
 {
 	server conquering;
@@ -173,7 +204,14 @@ void TCPserver()
 			conquering.sendMessage(response);
 			Sleep(50); // Le damos 50ms para que llegue el mensaje antes de cerrar el socket.
 		}
-
+		else
+		{
+			string response = buildResponse();
+			cout << "Press Enter to Reply  " << endl;
+			getchar();
+			conquering.sendMessage(response);
+			Sleep(50); // Le damos 50ms para que llegue el mensaje antes de cerrar el socket. 
+		}
 	}
 }
 int main(int argc, char* argv[])
