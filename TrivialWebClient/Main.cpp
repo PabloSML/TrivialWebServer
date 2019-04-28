@@ -13,8 +13,8 @@ using namespace std;
 class client {
 public:
 	client();
-	void startConnection(string host);
-	void sendMessage(string message);
+	void startConnection(const string& host);
+	void sendMessage(const string& message);
 	void receiveMessage();
 	~client();
 
@@ -38,7 +38,7 @@ client::~client() {
 	delete IO_handler;
 }
 
-void client::startConnection(string host) {
+void client::startConnection(const string& host) {
 	endpoint = client_resolver->resolve(
 		boost::asio::ip::tcp::resolver::query(host, HELLO_PORT_STR));
 	cout << "Trying to connect to " << host << " on port " << HELLO_PORT_STR << std::endl;
@@ -46,7 +46,7 @@ void client::startConnection(string host) {
 	socket_forClient->non_blocking(true);
 }
 
-void client::sendMessage(string message) {
+void client::sendMessage(const string& message) {
 
 	size_t len;
 	boost::system::error_code error;
