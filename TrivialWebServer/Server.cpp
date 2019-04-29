@@ -1,80 +1,66 @@
-#include "Server.h"
+#include "server.h"
 
-Server::Server(string port) {
 
-	this->IO_handler = new boost::asio::io_service();
-	this->serverSocket = new boost::asio::ip::tcp::socket(*(this->IO_handler));
-	this->serverAcceptor = new boost::asio::ip::tcp::acceptor(*(this->IO_handler),
-		boost::asio::ip::tcp::endpoint(boost::asio::ip::tcp::v4(), stoi(port)));
-
+void server::writeCompletitionCallback(const boost::system::error_code& error, size_t transfered_bytes) {
+	cout << endl << "Write Callback called" << endl;
 }
 
-Server::~Server() {
-
-	cout << "Disconnecting.." << endl;
-	this->serverAcceptor->close();
-	this->serverSocket->close();
-	delete this->serverAcceptor;
-	delete this->serverSocket;
-	delete this->IO_handler;
-
+void server::startConnection() {
+	server_acceptor->accept(*socket_forServer);
+	socket_forServer->non_blocking(true);
 }
 
-void Server::connect() {
+void server::sendMessage(const string& message) {
 
-	cout << "Waiting for somebody to connect.. :( " << endl;
-	this->serverAcceptor->accept(*(this->serverSocket));
-
-}
-
-string Server::getInfo() {
-
-	char buffer[1 + 255 + 1];
-	size_t lenght = 0;
+	size_t len;
 	boost::system::error_code error;
 
-	do {
-		lenght = this->serverSocket->read_some(boost::asio::buffer(buffer), error);
-	} while (error);
-
-	buffer[lenght] = 0;
-	string retValue = buffer;
-	cout << "Recieved a message" << endl;
-
-	return retValue;
+	do
+	{
+		len = socket_forServer->write_some(boost::asio::buffer(message, message.size()), error);
+	} while ((error.value() == WSAEWOULDBLOCK));
+	if (error)
+		std::cout << "Error while trying to connect to server " << error.message() << std::endl;
 }
 
-string Server::getInfoTimed(int ms)
-{
-	//Timer timer;
-
-
-
-	char buffer[1 + 255 + 1];
-	size_t lenght = 0;
+string server::receiveMessage() {
 	boost::system::error_code error;
+	char buf[512];
+	string request = "Error";
+	size_t len = 0;
+	cout << "Receiving Message" << endl;
+	do
+	{
+		len = socket_forServer->read_some(boost::asio::buffer(buf), error);
 
-	//timer.start();
-
-	bool timeout = false;
-
-	do {
-		lenght = this->serverSocket->read_some(boost::asio::buffer(buffer), error);
-		//timer.stop();
-		if (/*timer.getTime() > ms && lenght == 0*/1) { // Pido que lenght == 0 asi no lo paro mientras esta mandando
-			timeout = true;
+		if (!error)
+		{
+			buf[len] = '\0';
+			request = string(buf);
 		}
 
-	} while (error && !timeout);
-	string retValue;
+	} while (error.value() == WSAEWOULDBLOCK);
 
-	if (!timeout) {
-		buffer[lenght] = 0;
-		retValue = buffer;
-		cout << "Recieved a message" << endl;
-	}
+	if (!error)
+		cout << endl << "Client says: " << request << endl;
 	else
-		retValue = SERVER_TIMEOUT;
+		cout << "Error while trying to connect to server " << error.message() << endl;
 
-	return retValue;
+	return request;
+}
+
+server::server() {
+	IO_handler = new boost::asio::io_service();
+	socket_forServer = new boost::asio::ip::tcp::socket(*IO_handler);
+	server_acceptor = new boost::asio::ip::tcp::acceptor(*IO_handler,
+		boost::asio::ip::tcp::endpoint(boost::asio::ip::tcp::v4(), HELLO_PORT));
+	cout << endl << "Ready. Port " << HELLO_PORT << " created" << endl;
+}
+
+server::~server() {
+	server_acceptor->close();
+	socket_forServer->close();
+	delete server_acceptor;
+	delete socket_forServer;
+	delete IO_handler;
 }
