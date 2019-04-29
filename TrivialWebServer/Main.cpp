@@ -95,6 +95,45 @@ server::~server() {
 
 bool validateMessage(string& message)
 {
+	const char * buf = message.c_str();
+
+	if((message.find("GET")==string::npos) || (message.find(" HTTP/1.1")==string::npos) || (message.find("Host:")== string::npos) || (message.find("GET") != 0))
+	{
+		return false;
+	}
+
+	string aux = "Host:";
+	int pos = message.find("Host:") + aux.size();
+	int dotcounter = 0;
+	int numcounter = 0;
+	bool hostvalid= false;
+
+	while (!hostvalid) {
+		if (buf[pos] >= '0' && buf[pos] <= '9')
+		{
+			numcounter++;
+			if (numcounter > 3)
+				return false;
+		}
+		else if (buf[pos] == '.')
+		{
+			dotcounter++;
+			numcounter = 0;
+			if (dotcounter > 3)
+				return false;
+		}
+		else if (buf[pos] == ' ' || buf[pos] == '\r')
+		{
+			if (dotcounter == 3 && numcounter > 0)
+			{
+				hostvalid = true;
+			}
+			else
+				return false;
+		}
+		pos++;
+	}
+
 	return true;
 }
 
