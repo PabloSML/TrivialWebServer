@@ -95,10 +95,12 @@ server::~server() {
 
 bool validateMessage(string& message)
 {
+	
 	const char * buf = message.c_str();
 
 	if((message.find("GET")==string::npos) || (message.find(" HTTP/1.1")==string::npos) || (message.find("Host:")== string::npos) || (message.find("GET") != 0))
 	{
+		cout << "Not found" << endl;
 		return false;
 	}
 
@@ -107,29 +109,42 @@ bool validateMessage(string& message)
 	int dotcounter = 0;
 	int numcounter = 0;
 	bool hostvalid= false;
+	string sub = message.substr(pos);
+	
 
 	while (!hostvalid) {
 		if (buf[pos] >= '0' && buf[pos] <= '9')
 		{
 			numcounter++;
 			if (numcounter > 3)
+			{
+				cout << "Error number" << endl;
 				return false;
+			}
 		}
 		else if (buf[pos] == '.')
 		{
 			dotcounter++;
 			numcounter = 0;
 			if (dotcounter > 3)
+			{
+				cout << "Error dot" << endl;
 				return false;
+			}
 		}
 		else if (buf[pos] == ' ' || buf[pos] == '\r')
 		{
-			if (dotcounter == 3 && numcounter > 0)
-			{
-				hostvalid = true;
+			if (dotcounter != 0 && numcounter != 0) {
+				if (dotcounter == 3 && numcounter > 0)
+				{
+					hostvalid = true;
+				}
+				else
+				{
+					cout << "Error format" << endl;
+					return false;
+				}
 			}
-			else
-				return false;
 		}
 		pos++;
 	}
