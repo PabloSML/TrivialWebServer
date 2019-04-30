@@ -1,5 +1,7 @@
 #include "server.h"
 
+#define CRLF "\r\n"
+#define SERVER_IP "127.0.0.1"
 
 
 bool validateMessage(string& message)

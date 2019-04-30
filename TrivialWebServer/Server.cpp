@@ -1,6 +1,5 @@
 #include "server.h"
 
-
 void server::writeCompletitionCallback(const boost::system::error_code& error, size_t transfered_bytes) {
 	cout << endl << "Write Callback called" << endl;
 }
