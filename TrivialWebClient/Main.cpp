@@ -49,18 +49,18 @@ void asioTcpClient(string host, string pathFile)
 #include <Windows.h>
 int main(int argc, char* argv[])
 {
-	if (argc > 1)
+	if (argc > 1)	//En caso de que no se haya cargado nada...
 	{
 		std::string host;
 		std::string pathFile;
 		std::string input = argv[1];
 		std::streampos beg = 0;
-		std::streampos end = input.find_first_of('/');
+		std::streampos end = input.find_first_of('/'); //Buscamos el final del numero de host
 		if (end != std::string::npos)
 		{
-			host = input.substr(beg, end - beg);
+			host = input.substr(beg, end - beg); //Substraemos el numero de host
 			beg = end;
-			pathFile = input.substr(beg, std::string::npos);
+			pathFile = input.substr(beg, std::string::npos); //Substraemos el path
 
 			asioTcpClient(host, pathFile);
 			std::cout << "Press Enter to exit..." << std::endl;
@@ -68,7 +68,7 @@ int main(int argc, char* argv[])
 		}
 		else
 		{
-			std::cout << "Missing commands..." << endl;
+			std::cout << "Missing commands..." << std::endl;
 			getchar();
 		}
 	}

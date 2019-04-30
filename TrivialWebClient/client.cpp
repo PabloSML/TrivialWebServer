@@ -16,6 +16,7 @@ client::~client() {
 	delete IO_handler;
 }
 
+//Crea la conexion, devuelve true si pudo y false en caso de que no
 bool client::startConnection(const string& host) {
 	boost::asio::ip::tcp::resolver::iterator end; //Valor creado para comparar los iteradores
 	boost::asio::ip::tcp::resolver::iterator endpoint_copy; //Copia del interator para manejo de la funcion
@@ -43,26 +44,26 @@ bool client::startConnection(const string& host) {
 		return true;
 	}
 }
-
+//Escribe la data en el stream del socket
 void client::sendMessage(const string& message) {
 
 	size_t len;
 	boost::system::error_code error;
 
-	do//escribimos la data en el stream del socket
+	do
 	{
 		len = socket_forClient->write_some(boost::asio::buffer(message, message.size()), error);
 	} while ((error.value() == WSAEWOULDBLOCK));
 	if (error)
 		std::cout << "Error while trying to connect to server " << error.message() << std::endl;
 }
-
+//Lee y guarda en un txt lo que mande el servidor
 void client::receiveMessage() {
 	boost::system::error_code error;
 	char buf[512];
 	size_t len = 0;
 	cout << "Receiving Message" << std::endl;
-	do //Leemos y guardamos lo que nos mande el servidor
+	do 
 	{
 		len = socket_forClient->read_some(boost::asio::buffer(buf), error);
 
