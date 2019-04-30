@@ -15,13 +15,13 @@ using namespace std;
 class client {
 public:
 	client();
-	bool startConnection(const string& host);
-	void sendMessage(const string& message);
-	void receiveMessage();
+	bool startConnection(const string& host); //Inicia la coneccion con el HOST recibido
+	void sendMessage(const string& message); //Manda un mensaje al servidor
+	void receiveMessage(); //Recibe el mensaje del servidor y lo guarda
 	~client();
 
 private:
-	void CopyMessage(char* s,size_t length);
+	void CopyMessage(char* s,size_t length); //Copia un mensaje recibido en un txt
 	boost::asio::io_service* IO_handler;
 	boost::asio::ip::tcp::socket* socket_forClient;
 	boost::asio::ip::tcp::resolver* client_resolver;
