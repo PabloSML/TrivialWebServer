@@ -15,7 +15,7 @@ using namespace std;
 class client {
 public:
 	client();
-	bool startConnection(const string& host); //Inicia la coneccion con el HOST recibido
+	bool startConnection(const string& host); //Inicia la conexion con el HOST recibido, devuelve true si lo logro, false si no
 	void sendMessage(const string& message); //Manda un mensaje al servidor
 	void receiveMessage(); //Recibe el mensaje del servidor y lo guarda
 	~client();
