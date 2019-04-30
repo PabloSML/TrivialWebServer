@@ -1,6 +1,6 @@
 
 #include "client.h"
-
+#include <fstream>
 
 
 client::client() {
@@ -16,12 +16,31 @@ client::~client() {
 	delete IO_handler;
 }
 
-void client::startConnection(const string& host) {
-	endpoint = client_resolver->resolve(
-		boost::asio::ip::tcp::resolver::query(host, HELLO_PORT_STR));
+bool client::startConnection(const string& host) {
+	boost::asio::ip::tcp::resolver::iterator end;
+	boost::asio::ip::tcp::resolver::iterator endpoint_copy;
+	endpoint = client_resolver->resolve(boost::asio::ip::tcp::resolver::query(host, HELLO_PORT_STR));
+	endpoint_copy = endpoint;
 	cout << "Trying to connect to " << host << " on port " << HELLO_PORT_STR << std::endl;
-	boost::asio::connect(*socket_forClient, endpoint);
-	socket_forClient->non_blocking(true);
+
+	boost::system::error_code error = boost::asio::error::host_not_found;
+	while (error && endpoint_copy != end)
+	{
+		socket_forClient->close();
+		socket_forClient->connect(*endpoint_copy++, error);
+	}
+	
+	if (endpoint == end || error)
+	{
+		socket_forClient->close();
+		cout << "Host not Found" << endl;
+		return false;
+	}
+	else
+	{
+		socket_forClient->non_blocking(true);
+		return true;
+	}
 }
 
 void client::sendMessage(const string& message) {
@@ -52,7 +71,25 @@ void client::receiveMessage() {
 	} while (error.value() == WSAEWOULDBLOCK);
 
 	if (!error)
+	{
 		std::cout << std::endl << "Server says: " << buf << std::endl;
+		CopyMessage(buf,len);
+	}
 	else
+	{
 		std::cout << "Error while trying to connect to server " << error.message() << std::endl;
+	}
+}
+
+void
+client::CopyMessage(char* server_info,size_t length)
+{
+	if (server_info != NULL)
+	{
+		ofstream dest;
+		dest.open("server_copy.txt", ios::binary); // Abre el archivo de salida
+		dest.write(server_info, length); // Escribe el bloque de memoria
+		dest.close();
+		std::cout << "Server copied" << std::endl;
+	}
 }

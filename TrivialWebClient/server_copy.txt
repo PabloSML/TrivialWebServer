@@ -1,0 +1,8 @@
+HTTP/1.1 200 OK
+Date: Mon, 29 Apr 2019 22:18:02 GMT
+Location: 127.0.0.1/test.txt
+Cache-Control: max-age=30
+Expires: Mon, 29 Apr 2019 22:18:32 GMT
+Content-Lenght: 36
+Content-Type: text/html; charset=iso-8859-1
+You have succesfully robbed my data!
