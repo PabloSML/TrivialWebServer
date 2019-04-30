@@ -17,20 +17,20 @@ client::~client() {
 }
 
 bool client::startConnection(const string& host) {
-	boost::asio::ip::tcp::resolver::iterator end;
-	boost::asio::ip::tcp::resolver::iterator endpoint_copy;
-	endpoint = client_resolver->resolve(boost::asio::ip::tcp::resolver::query(host, HELLO_PORT_STR));
+	boost::asio::ip::tcp::resolver::iterator end; //Valor creado para comparar los iteradores
+	boost::asio::ip::tcp::resolver::iterator endpoint_copy; //Copia del interator para manejo de la funcion
+	endpoint = client_resolver->resolve(boost::asio::ip::tcp::resolver::query(host, HELLO_PORT_STR)); //Cargamos el puerto
 	endpoint_copy = endpoint;
 	cout << "Trying to connect to " << host << " on port " << HELLO_PORT_STR << std::endl;
 
 	boost::system::error_code error = boost::asio::error::host_not_found;
-	while (error && endpoint_copy != end)
+	while (error && endpoint_copy != end)//Probamos puerto por puerto, en caso de error salta "error" y si se pasa salta endpoint_copy
 	{
-		socket_forClient->close();
+		socket_forClient->close();//Cerramos socket anterior para poder abrir otro
 		socket_forClient->connect(*endpoint_copy++, error);
 	}
 	
-	if (endpoint == end || error)
+	if (endpoint == end || error)//No se pudo entablar la conexion con el servidor/host
 	{
 		socket_forClient->close();
 		cout << "Host not Found" << endl;
@@ -38,6 +38,7 @@ bool client::startConnection(const string& host) {
 	}
 	else
 	{
+		cout << "Connection established." << endl; //avisamos que se logro
 		socket_forClient->non_blocking(true);
 		return true;
 	}
@@ -48,7 +49,7 @@ void client::sendMessage(const string& message) {
 	size_t len;
 	boost::system::error_code error;
 
-	do
+	do//escribimos la data en el stream del socket
 	{
 		len = socket_forClient->write_some(boost::asio::buffer(message, message.size()), error);
 	} while ((error.value() == WSAEWOULDBLOCK));
@@ -61,11 +62,11 @@ void client::receiveMessage() {
 	char buf[512];
 	size_t len = 0;
 	cout << "Receiving Message" << std::endl;
-	do
+	do //Leemos y guardamos lo que nos mande el servidor
 	{
 		len = socket_forClient->read_some(boost::asio::buffer(buf), error);
 
-		if (!error)
+		if (!error) //El error implica que termino, se agrega un terminador
 			buf[len] = '\0';
 
 	} while (error.value() == WSAEWOULDBLOCK);
@@ -73,7 +74,7 @@ void client::receiveMessage() {
 	if (!error)
 	{
 		std::cout << std::endl << "Server says: " << buf << std::endl;
-		CopyMessage(buf,len);
+		CopyMessage(buf,len); //Copiamos lo recibido
 	}
 	else
 	{

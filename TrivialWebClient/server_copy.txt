@@ -1,8 +1,8 @@
 HTTP/1.1 200 OK
-Date: Tue, 30 Apr 2019 14:02:51 GMT
-Location: 127.0.0.1/C:/Users/Pablo/source/repos/TrivialWebServer/TrivialWebServer/test.txt
+Date: Tue, 30 Apr 2019 15:00:23 GMT
+Location: 127.0.0.1/C:\Users\Philippe\source\repos\PabloSML\TrivialWebServer\TrivialWebServer/test.txt
 Cache-Control: max-age=30
-Expires: Tue, 30 Apr 2019 14:03:21 GMT
+Expires: Tue, 30 Apr 2019 15:00:53 GMT
 Content-Lenght: 36
 Content-Type: text/html; charset=iso-8859-1
 You have succesfully robbed my data!
