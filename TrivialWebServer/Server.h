@@ -18,12 +18,11 @@ using namespace std;
 
 class server {
 public:
-	server();
-	void startConnection();
-	void sendMessage(const string& message);
-	string receiveMessage();
-	void writeCompletitionCallback(const boost::system::error_code& error, size_t transfered_bytes);
-	~server();
+	server();									//Constructor
+	void startConnection();						//Server acepta una coneccion y setea el socket en modo no bloqueante.
+	void sendMessage(const string& message);	//Envia mensaje al socket. En caso de haber un error, lo imprime en pantalla.
+	string receiveMessage();					//Devuelve el mensaje recibido. En caso de surgir un error, avisa por terminal.
+	~server();									//Destructor
 
 private:
 	boost::asio::io_service*  IO_handler;

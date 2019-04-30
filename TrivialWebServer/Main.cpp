@@ -151,21 +151,21 @@ bool TCPserver()
 		{
 			validInput = true;
 		}
-		else if (validateMessage(request))
+		else if (validateMessage(request))			
 		{
 			goodDataTransfer = true;
 			validInput = true;
 			string content;
 			streampos size;
 			char* buffer;
-			streampos beg = request.find_first_of('/');
+			streampos beg = request.find_first_of('/');		
 			beg += 1;
 			streampos end = request.find(" HTTP/1.1");
 			pathFile = request.substr(beg, end - beg);
 			const char* filename = pathFile.c_str();
 
 			ifstream file(filename, ios::in | ios::binary);
-			if (file.is_open())
+			if (file.is_open())								//Evalua que este abierto el file y que exista.
 			{
 				file.seekg(0, file.end);
 				size = file.tellg();
@@ -187,7 +187,7 @@ bool TCPserver()
 				Sleep(50); // Le damos 50ms para que llegue el mensaje antes de cerrar el socket.
 			}
 			else
-			{
+			{												
 				string response = buildResponse();			
 				cout << "Press Enter to Reply  " << endl;
 				getchar();
