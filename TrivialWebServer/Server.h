@@ -10,7 +10,7 @@
 #include <boost/date_time/local_time/local_time.hpp>
 
 #define HELLO_PORT 80
-
+#define SERVER_IP "127.0.0.1"
 
 using namespace std;
 

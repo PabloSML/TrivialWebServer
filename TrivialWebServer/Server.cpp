@@ -19,7 +19,7 @@ void server::sendMessage(const string& message) {
 		len = socket_forServer->write_some(boost::asio::buffer(message, message.size()), error);
 	} while ((error.value() == WSAEWOULDBLOCK));
 	if (error)
-		std::cout << "Error while trying to connect to server " << error.message() << std::endl;
+		std::cout << "Error while trying to connect to client " << error.message() << std::endl;
 }
 
 string server::receiveMessage() {
@@ -43,7 +43,7 @@ string server::receiveMessage() {
 	if (!error)
 		cout << endl << "Client says: " << request << endl;
 	else
-		cout << "Error while trying to connect to server " << error.message() << endl;
+		cout << "Error while trying to connect to client " << error.message() << endl;
 
 	return request;
 }

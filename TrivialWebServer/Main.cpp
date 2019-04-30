@@ -1,8 +1,14 @@
+/*
+			Server
+	
+		Este server fue diseñado para atender pedidos dentro de una red interna. Al conectarse y
+	recibir un pedido, provee la posibilidad de analizarlo antes de contestar utilizando la tecla
+	de 'ENTER'.
+		En caso de recibir un
+*/
 #include "server.h"
 
 #define CRLF "\r\n"
-#define SERVER_IP "127.0.0.1"
-
 
 bool validateMessage(string& message)
 {
@@ -11,7 +17,7 @@ bool validateMessage(string& message)
 
 	if((message.find("GET")==string::npos) || (message.find(" HTTP/1.1")==string::npos) || (message.find("Host:")== string::npos) || (message.find("GET") != 0))
 	{
-		cout << "Not found" << endl;
+		cout << "Invalid request" << endl;
 		success = false;
 	}
 	else
@@ -127,63 +133,78 @@ string buildResponse()
 	return response;
 }
 
-void TCPserver()
+bool TCPserver()
 {
+	bool goodDataTransfer = false;
 	server conquering;
 	string request;
 	string pathFile;
+	bool validInput = false;
 
 	cout << endl << "Start Listening on port " << HELLO_PORT << endl;
 	conquering.startConnection();
 	cout << "Somebody connected to port " << HELLO_PORT << endl;
-	cout << "Waiting to hear from client" << endl;
-	request = conquering.receiveMessage();
-	if (validateMessage(request))
-	{
-		string content;
-		streampos size;
-		char* buffer;
-		streampos beg = request.find_first_of('/');
-		beg += 1;
-		streampos end = request.find(" HTTP/1.1");
-		pathFile = request.substr(beg, end - beg);
-		const char* filename = pathFile.c_str();
-
-		ifstream file(filename, ios::in | ios::binary);
-		if (file.is_open())
+	do {
+		cout << "Waiting to hear from client" << endl;
+		request = conquering.receiveMessage();
+		if (request == "Error")
 		{
-			file.seekg(0, file.end);
-			size = file.tellg();
-
-			buffer = new char[size];
-			file.seekg(0, ios::beg);
-			file.read(buffer, size);
-			file.close();
-
-			for (int i = 0; i < size; i++)
-				content.push_back(buffer[i]);
-
-			delete[] buffer;
-
-			string response = buildResponse(pathFile, size, content);
-			cout << "Press Enter to Reply  " << endl;
-			getchar();
-			conquering.sendMessage(response);
-			Sleep(50); // Le damos 50ms para que llegue el mensaje antes de cerrar el socket.
+			validInput = true;
 		}
-		else
+		else if (validateMessage(request))
 		{
-			string response = buildResponse();			
-			cout << "Press Enter to Reply  " << endl;
-			getchar();
-			conquering.sendMessage(response);
-			Sleep(50); // Le damos 50ms para que llegue el mensaje antes de cerrar el socket. 
+			goodDataTransfer = true;
+			validInput = true;
+			string content;
+			streampos size;
+			char* buffer;
+			streampos beg = request.find_first_of('/');
+			beg += 1;
+			streampos end = request.find(" HTTP/1.1");
+			pathFile = request.substr(beg, end - beg);
+			const char* filename = pathFile.c_str();
+
+			ifstream file(filename, ios::in | ios::binary);
+			if (file.is_open())
+			{
+				file.seekg(0, file.end);
+				size = file.tellg();
+
+				buffer = new char[size];
+				file.seekg(0, ios::beg);
+				file.read(buffer, size);
+				file.close();
+
+				for (int i = 0; i < size; i++)
+					content.push_back(buffer[i]);
+
+				delete[] buffer;
+
+				string response = buildResponse(pathFile, size, content);
+				cout << "Press Enter to Reply  " << endl;
+				getchar();
+				conquering.sendMessage(response);
+				Sleep(50); // Le damos 50ms para que llegue el mensaje antes de cerrar el socket.
+			}
+			else
+			{
+				string response = buildResponse();			
+				cout << "Press Enter to Reply  " << endl;
+				getchar();
+				conquering.sendMessage(response);
+				Sleep(50); // Le damos 50ms para que llegue el mensaje antes de cerrar el socket. 
+			}
 		}
-	}
+	} while (!validInput);
+
+	return goodDataTransfer;
 }
 int main(int argc, char* argv[])
 {
-	TCPserver();
+	bool jobDone = false;
+	do {
+		jobDone = TCPserver();
+	} while (!jobDone);
 	cout << "Press Enter to exit..." << endl;
 	getchar();
 }
