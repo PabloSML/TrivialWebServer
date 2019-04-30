@@ -1,3 +1,19 @@
+/*
+			Client
+		El client recibe por línea de comando el host/path/filename como único parámetro. 
+		Se conectará al server y le manda el mensaje en el formato requerido:
+		GET /path/filename HTTP/1.1 CRLF
+		Host:127.0.0.1 CRLF
+		CRLF
+
+		Una vez que se conecte, espera a la respuesta del server y luego lo guarda en "server_copy.txt".
+
+	Grupo 1:
+	- Lin, Xi
+	- Dutriez Diaz, Philippe
+	- Smolkin, Pablo
+*/
+
 
 #include "client.h"
 
