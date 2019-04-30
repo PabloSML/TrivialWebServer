@@ -32,7 +32,7 @@ int main(int argc, char* argv[])
 		std::string pathFile;
 		std::string input = argv[1];
 		std::streampos beg = 0;
-		std::streampos end = input.find_first_of('\\');
+		std::streampos end = input.find_first_of('/');
 		if (end != std::string::npos)
 		{
 			host = input.substr(beg, end - beg);
