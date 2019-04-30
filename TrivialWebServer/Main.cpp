@@ -169,9 +169,10 @@ void TCPserver()
 		}
 		else
 		{
-			string response = buildResponse();
+			string response = buildResponse();			//****esto no deberia ir.
 			cout << "Press Enter to Reply  " << endl;
 			getchar();
+			response = "Error 404. Page not found";		//****deberia tirar un error al no encontrar el archivo.
 			conquering.sendMessage(response);
 			Sleep(50); // Le damos 50ms para que llegue el mensaje antes de cerrar el socket. 
 		}
