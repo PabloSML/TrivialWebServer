@@ -222,8 +222,8 @@ int main(int argc, char* argv[])
 {
 	bool jobDone = false;
 	do {
-		jobDone = TCPserver();
-	} while (!jobDone);
+		jobDone = TCPserver();		
+	} while (!jobDone);					//Ejecuta TCPserver hasta que se pudo hacer una transferencia exitosa de datos
 	cout << "Press Enter to exit..." << endl;
-	getchar();
+	getchar();							//Espera un 'ENTER' para terminar el programa
 }

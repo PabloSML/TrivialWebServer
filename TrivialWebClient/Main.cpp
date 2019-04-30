@@ -1,6 +1,12 @@
 
 #include "client.h"
 
+/*
+Arma el mensaje en el formato requerido:
+GET /path/filename HTTP/1.1 CRLF 
+Host:127.0.0.1 CRLF 
+CRLF 
+ */
 string buildRequest(const string& host, const string& pathFile)
 {
 	string message = "GET " + pathFile + " HTTP/1.1" + CRLF + "Host:" + host + CRLF + CRLF;
@@ -8,17 +14,18 @@ string buildRequest(const string& host, const string& pathFile)
 	return message;
 }
 
+//Recibe el host y el path para enviar el mensaje al server.
 void asioTcpClient(string host, string pathFile)
 {
 	client conquering;
-	if (conquering.startConnection(host))
+	if (conquering.startConnection(host))					//Intenta conectarse.
 	{
-		string message = buildRequest(host, pathFile);
-		std::cout << "Press Enter to Send Request " << std::endl;
-		getchar();
-		conquering.sendMessage(message);
-		Sleep(50);
-		conquering.receiveMessage();
+		string message = buildRequest(host, pathFile);		//Arma el mensaje segun el formato requerido.
+		std::cout << "Press Enter to Send Request " << std::endl;	
+		getchar();											//Espera un 'ENTER' para enviar el mensaje.
+		conquering.sendMessage(message);					//Envia el mensaje al server
+		Sleep(50);											// Le damos 50ms para que llegue el mensaje.
+		conquering.receiveMessage();						//Recive el mensaje del server.
 	}
 }
 
